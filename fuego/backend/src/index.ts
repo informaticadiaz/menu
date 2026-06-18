@@ -2,13 +2,17 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 import { initializeDB } from './db/init';
 import { getDb } from './db/schema';
+import { getJwtSecret } from './auth';
+import { authMiddleware } from './middleware/auth';
 import { randomUUID } from 'crypto';
 import { mkdir, writeFile } from 'fs/promises';
 import path from 'path';
 
-const app = new Hono();
+const app = new Hono<{ Variables: { adminId: number; restaurantId: number } }>();
 
 app.use('*', cors({
   origin: ['http://localhost:3000', process.env.FRONTEND_URL || '*'],
@@ -51,6 +55,41 @@ app.post('/api/upload', async (c) => {
   }
 });
 
+app.post('/api/auth/login', async (c) => {
+  try {
+    const { email, password } = await c.req.json();
+    if (!email || !password) {
+      return c.json({ error: 'email y password requeridos' }, 400);
+    }
+    const admin = db.prepare('SELECT * FROM admin_users WHERE email = ?').get(email) as
+      | { id: number; restaurant_id: number; password_hash: string }
+      | undefined;
+    if (!admin || !(await bcrypt.compare(password, admin.password_hash))) {
+      return c.json({ error: 'Credenciales inválidas' }, 401);
+    }
+    const token = jwt.sign(
+      { adminId: admin.id, restaurantId: admin.restaurant_id },
+      getJwtSecret(),
+      { expiresIn: '7d' }
+    );
+    return c.json({ token });
+  } catch (error) {
+    return c.json({ error: String(error) }, 500);
+  }
+});
+
+app.get('/api/admin/menu', authMiddleware, (c) => {
+  try {
+    const restaurantId = c.get('restaurantId');
+    const items = db
+      .prepare('SELECT * FROM menu_items WHERE restaurant_id = ? ORDER BY category, name')
+      .all(restaurantId);
+    return c.json({ items });
+  } catch (error) {
+    return c.json({ error: String(error) }, 500);
+  }
+});
+
 app.post('/api/restaurants', async (c) => {
   try {
     const { name, slug } = await c.req.json();
@@ -75,29 +114,47 @@ app.get('/api/menu/:slug', (c) => {
   }
 });
 
-app.post('/api/menu-items', async (c) => {
+app.get('/api/menu-items/:id', (c) => {
   try {
-    const { restaurant_id, name, category, description, price, image_url } = await c.req.json();
-    if (!restaurant_id || !name || !price) return c.json({ error: 'Campos requeridos faltando' }, 400);
-    const stmt = db.prepare(
-      'INSERT INTO menu_items (restaurant_id, name, category, description, price, image_url) VALUES (?, ?, ?, ?, ?, ?)'
-    );
-    const result = stmt.run(restaurant_id, name, category || 'General', description || '', price, image_url || null);
-    return c.json({ id: result.lastInsertRowid, restaurant_id, name, category, description, price, image_url }, 201);
+    const id = c.req.param('id');
+    const item = db.prepare('SELECT * FROM menu_items WHERE id = ?').get(id);
+    if (!item) return c.json({ error: 'Item no encontrado' }, 404);
+    return c.json(item);
   } catch (error) {
     return c.json({ error: String(error) }, 500);
   }
 });
 
-app.put('/api/menu-items/:id', async (c) => {
+app.post('/api/menu-items', authMiddleware, async (c) => {
+  try {
+    const restaurantId = c.get('restaurantId');
+    const { name, category, description, price, image_url } = await c.req.json();
+    if (!name || !price) return c.json({ error: 'Campos requeridos faltando' }, 400);
+    const stmt = db.prepare(
+      'INSERT INTO menu_items (restaurant_id, name, category, description, price, image_url) VALUES (?, ?, ?, ?, ?, ?)'
+    );
+    const result = stmt.run(restaurantId, name, category || 'General', description || '', price, image_url || null);
+    return c.json({ id: result.lastInsertRowid, restaurant_id: restaurantId, name, category, description, price, image_url }, 201);
+  } catch (error) {
+    return c.json({ error: String(error) }, 500);
+  }
+});
+
+app.put('/api/menu-items/:id', authMiddleware, async (c) => {
   try {
     const id = c.req.param('id');
+    const restaurantId = c.get('restaurantId');
+    const existing = db.prepare('SELECT restaurant_id FROM menu_items WHERE id = ?').get(id) as
+      | { restaurant_id: number }
+      | undefined;
+    if (!existing) return c.json({ error: 'Item no encontrado' }, 404);
+    if (existing.restaurant_id !== restaurantId) return c.json({ error: 'Prohibido' }, 403);
     const updates = await c.req.json();
-    const allowedFields = ['name', 'category', 'description', 'price', 'image_url'];
+    const allowedFields = ['name', 'category', 'description', 'price', 'image_url', 'available'];
     const validUpdates = Object.fromEntries(Object.entries(updates).filter(([key]) => allowedFields.includes(key)));
     if (Object.keys(validUpdates).length === 0) return c.json({ error: 'Sin campos para actualizar' }, 400);
     const setClauses = Object.keys(validUpdates).map(key => `${key} = ?`).join(', ');
-    const values = Object.values(validUpdates);
+    const values = Object.values(validUpdates).map(v => typeof v === 'boolean' ? Number(v) : v);
     const stmt = db.prepare(`UPDATE menu_items SET ${setClauses}, updated_at = ? WHERE id = ?`);
     stmt.run(...values, new Date().toISOString(), id);
     return c.json({ success: true, id });
@@ -106,9 +163,15 @@ app.put('/api/menu-items/:id', async (c) => {
   }
 });
 
-app.delete('/api/menu-items/:id', (c) => {
+app.delete('/api/menu-items/:id', authMiddleware, (c) => {
   try {
     const id = c.req.param('id');
+    const restaurantId = c.get('restaurantId');
+    const existing = db.prepare('SELECT restaurant_id FROM menu_items WHERE id = ?').get(id) as
+      | { restaurant_id: number }
+      | undefined;
+    if (!existing) return c.json({ error: 'Item no encontrado' }, 404);
+    if (existing.restaurant_id !== restaurantId) return c.json({ error: 'Prohibido' }, 403);
     db.prepare('DELETE FROM menu_items WHERE id = ?').run(id);
     return c.json({ success: true });
   } catch (error) {

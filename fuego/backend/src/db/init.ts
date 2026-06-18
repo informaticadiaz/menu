@@ -1,11 +1,15 @@
 import fs from 'fs';
 import path from 'path';
+import bcrypt from 'bcryptjs';
 import { initDb, schema } from './schema';
 
+const SEED_ADMIN_EMAIL = 'admin@fuego-ba.com';
+const SEED_ADMIN_PASSWORD = 'fuego1234';
+
 export function initializeDB(): void {
-  const db = initDb();
   const dataDir = path.join(process.cwd(), 'data');
   if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+  const db = initDb();
   db.exec(schema.restaurants);
   db.exec(schema.menu_items);
   db.exec(schema.admin_users);
@@ -34,7 +38,14 @@ export function seedDatabase(): void {
       [restaurant.id, 'Agua Mineral 500ml', 'Bebidas', 'Agua mineral sin gas', 100],
     ];
     items.forEach(item => itemStmt.run(...item));
+
+    const passwordHash = bcrypt.hashSync(SEED_ADMIN_PASSWORD, 10);
+    db.prepare(
+      'INSERT OR IGNORE INTO admin_users (restaurant_id, email, password_hash) VALUES (?, ?, ?)'
+    ).run(restaurant.id, SEED_ADMIN_EMAIL, passwordHash);
+
     console.log('✅ Database seeded with example data');
+    console.log(`🔑 Admin de ejemplo: ${SEED_ADMIN_EMAIL} / ${SEED_ADMIN_PASSWORD}`);
   } catch (error) {
     console.log('ℹ️ Seed data already exists or error:', error);
   }
