@@ -1,0 +1,123 @@
+import { Hono } from 'hono';
+import { cors } from 'hono/cors';
+import { serve } from '@hono/node-server';
+import { serveStatic } from '@hono/node-server/serve-static';
+import { initializeDB } from './db/init';
+import { getDb } from './db/schema';
+import { randomUUID } from 'crypto';
+import { mkdir, writeFile } from 'fs/promises';
+import path from 'path';
+
+const app = new Hono();
+
+app.use('*', cors({
+  origin: ['http://localhost:3000', process.env.FRONTEND_URL || '*'],
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowHeaders: ['Content-Type', 'Authorization'],
+}));
+
+app.use('/uploads/*', serveStatic({ root: './' }));
+
+initializeDB();
+const db = getDb();
+const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
+
+app.get('/health', (c) => c.json({ status: 'ok' }));
+
+app.post('/api/upload', async (c) => {
+  try {
+    const body = await c.req.parseBody();
+    const file = body['file'];
+    if (!file || !(file instanceof File)) {
+      return c.json({ error: 'Archivo requerido (campo "file")' }, 400);
+    }
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      return c.json({ error: 'Formato no permitido. Usar JPG, PNG o WEBP' }, 400);
+    }
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      return c.json({ error: 'Archivo muy pesado (máximo 5MB)' }, 400);
+    }
+    await mkdir(UPLOADS_DIR, { recursive: true });
+    const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
+    const filename = `${randomUUID()}.${ext}`;
+    const filepath = path.join(UPLOADS_DIR, filename);
+    const buffer = Buffer.from(await file.arrayBuffer());
+    await writeFile(filepath, buffer);
+    return c.json({ url: `/uploads/${filename}` }, 201);
+  } catch (error) {
+    return c.json({ error: String(error) }, 500);
+  }
+});
+
+app.post('/api/restaurants', async (c) => {
+  try {
+    const { name, slug } = await c.req.json();
+    if (!name || !slug) return c.json({ error: 'name y slug requeridos' }, 400);
+    const stmt = db.prepare('INSERT INTO restaurants (name, slug, created_at) VALUES (?, ?, ?)');
+    const result = stmt.run(name, slug, new Date().toISOString());
+    return c.json({ id: result.lastInsertRowid, name, slug }, 201);
+  } catch (error) {
+    return c.json({ error: String(error) }, 500);
+  }
+});
+
+app.get('/api/menu/:slug', (c) => {
+  try {
+    const slug = c.req.param('slug');
+    const restaurant = db.prepare('SELECT id FROM restaurants WHERE slug = ?').get(slug) as { id: number } | undefined;
+    if (!restaurant) return c.json({ error: 'Restaurante no encontrado' }, 404);
+    const items = db.prepare('SELECT * FROM menu_items WHERE restaurant_id = ? ORDER BY category, name').all(restaurant.id);
+    return c.json({ restaurant_id: restaurant.id, items });
+  } catch (error) {
+    return c.json({ error: String(error) }, 500);
+  }
+});
+
+app.post('/api/menu-items', async (c) => {
+  try {
+    const { restaurant_id, name, category, description, price, image_url } = await c.req.json();
+    if (!restaurant_id || !name || !price) return c.json({ error: 'Campos requeridos faltando' }, 400);
+    const stmt = db.prepare(
+      'INSERT INTO menu_items (restaurant_id, name, category, description, price, image_url) VALUES (?, ?, ?, ?, ?, ?)'
+    );
+    const result = stmt.run(restaurant_id, name, category || 'General', description || '', price, image_url || null);
+    return c.json({ id: result.lastInsertRowid, restaurant_id, name, category, description, price, image_url }, 201);
+  } catch (error) {
+    return c.json({ error: String(error) }, 500);
+  }
+});
+
+app.put('/api/menu-items/:id', async (c) => {
+  try {
+    const id = c.req.param('id');
+    const updates = await c.req.json();
+    const allowedFields = ['name', 'category', 'description', 'price', 'image_url'];
+    const validUpdates = Object.fromEntries(Object.entries(updates).filter(([key]) => allowedFields.includes(key)));
+    if (Object.keys(validUpdates).length === 0) return c.json({ error: 'Sin campos para actualizar' }, 400);
+    const setClauses = Object.keys(validUpdates).map(key => `${key} = ?`).join(', ');
+    const values = Object.values(validUpdates);
+    const stmt = db.prepare(`UPDATE menu_items SET ${setClauses}, updated_at = ? WHERE id = ?`);
+    stmt.run(...values, new Date().toISOString(), id);
+    return c.json({ success: true, id });
+  } catch (error) {
+    return c.json({ error: String(error) }, 500);
+  }
+});
+
+app.delete('/api/menu-items/:id', (c) => {
+  try {
+    const id = c.req.param('id');
+    db.prepare('DELETE FROM menu_items WHERE id = ?').run(id);
+    return c.json({ success: true });
+  } catch (error) {
+    return c.json({ error: String(error) }, 500);
+  }
+});
+
+const port = Number(process.env.PORT) || 3001;
+serve({ fetch: app.fetch, port });
+console.log(`🔥 Fuego backend running on port ${port}`);
+
+export default app;
