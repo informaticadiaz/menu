@@ -8,6 +8,7 @@ import { initializeDB } from './db/init';
 import { getDb } from './db/schema';
 import { getJwtSecret } from './auth';
 import { authMiddleware } from './middleware/auth';
+import { slugify, isValidSlug, resolveAvailableSlug } from './slug';
 import { randomUUID } from 'crypto';
 import { mkdir, writeFile } from 'fs/promises';
 import path from 'path';
@@ -90,13 +91,49 @@ app.get('/api/admin/menu', authMiddleware, (c) => {
   }
 });
 
-app.post('/api/restaurants', async (c) => {
+app.post('/api/auth/signup', async (c) => {
   try {
-    const { name, slug } = await c.req.json();
-    if (!name || !slug) return c.json({ error: 'name y slug requeridos' }, 400);
-    const stmt = db.prepare('INSERT INTO restaurants (name, slug, created_at) VALUES (?, ?, ?)');
-    const result = stmt.run(name, slug, new Date().toISOString());
-    return c.json({ id: result.lastInsertRowid, name, slug }, 201);
+    const { restaurantName, slug, email, password } = await c.req.json();
+    if (!restaurantName || !email || !password) {
+      return c.json({ error: 'restaurantName, email y password requeridos' }, 400);
+    }
+
+    const existingAdmin = db.prepare('SELECT 1 FROM admin_users WHERE email = ?').get(email);
+    if (existingAdmin) return c.json({ error: 'El email ya está registrado' }, 409);
+
+    let finalSlug: string;
+    if (slug) {
+      if (!isValidSlug(slug)) {
+        return c.json({ error: 'Formato de slug inválido' }, 400);
+      }
+      const slugTaken = db.prepare('SELECT 1 FROM restaurants WHERE slug = ?').get(slug);
+      if (slugTaken) return c.json({ error: 'El slug ya está en uso' }, 409);
+      finalSlug = slug;
+    } else {
+      finalSlug = resolveAvailableSlug(slugify(restaurantName));
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const now = new Date().toISOString();
+
+    const signupTx = db.transaction(() => {
+      const restaurantResult = db
+        .prepare('INSERT INTO restaurants (name, slug, created_at) VALUES (?, ?, ?)')
+        .run(restaurantName, finalSlug, now);
+      const restaurantId = restaurantResult.lastInsertRowid as number;
+      const adminResult = db
+        .prepare('INSERT INTO admin_users (restaurant_id, email, password_hash) VALUES (?, ?, ?)')
+        .run(restaurantId, email, passwordHash);
+      return { restaurantId, adminId: adminResult.lastInsertRowid as number };
+    });
+
+    const { restaurantId, adminId } = signupTx();
+    const token = jwt.sign({ adminId, restaurantId }, getJwtSecret(), { expiresIn: '7d' });
+
+    return c.json(
+      { token, restaurant: { id: restaurantId, name: restaurantName, slug: finalSlug } },
+      201
+    );
   } catch (error) {
     return c.json({ error: String(error) }, 500);
   }
