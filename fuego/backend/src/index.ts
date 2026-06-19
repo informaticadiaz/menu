@@ -105,10 +105,12 @@ app.post('/api/restaurants', async (c) => {
 app.get('/api/menu/:slug', (c) => {
   try {
     const slug = c.req.param('slug');
-    const restaurant = db.prepare('SELECT id FROM restaurants WHERE slug = ?').get(slug) as { id: number } | undefined;
+    const restaurant = db.prepare('SELECT id, name FROM restaurants WHERE slug = ?').get(slug) as
+      | { id: number; name: string }
+      | undefined;
     if (!restaurant) return c.json({ error: 'Restaurante no encontrado' }, 404);
     const items = db.prepare('SELECT * FROM menu_items WHERE restaurant_id = ? ORDER BY category, name').all(restaurant.id);
-    return c.json({ restaurant_id: restaurant.id, items });
+    return c.json({ restaurant_id: restaurant.id, restaurant_name: restaurant.name, items });
   } catch (error) {
     return c.json({ error: String(error) }, 500);
   }
