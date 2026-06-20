@@ -16,3 +16,4 @@ frontend/out/
 *.log
 backup/
 *.db.bak
+pnpm-*
