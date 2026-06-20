@@ -1,12 +1,13 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { setCookie, deleteCookie } from 'hono/cookie';
 import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { initializeDB } from './db/init';
 import { getDb } from './db/schema';
-import { getJwtSecret } from './auth';
+import { getJwtSecret, SESSION_COOKIE_NAME, SESSION_MAX_AGE_SECONDS } from './auth';
 import { authMiddleware } from './middleware/auth';
 import { slugify, isValidSlug, resolveAvailableSlug } from './slug';
 import { randomUUID } from 'crypto';
@@ -15,10 +16,13 @@ import path from 'path';
 
 const app = new Hono<{ Variables: { adminId: number; restaurantId: number } }>();
 
+const ALLOWED_ORIGINS = [process.env.FRONTEND_URL || 'http://localhost:3000'];
+
 app.use('*', cors({
-  origin: ['http://localhost:3000', process.env.FRONTEND_URL || '*'],
+  origin: ALLOWED_ORIGINS,
+  credentials: true,
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowHeaders: ['Content-Type', 'Authorization'],
+  allowHeaders: ['Content-Type'],
 }));
 
 app.use('/uploads/*', serveStatic({ root: './' }));
@@ -73,10 +77,25 @@ app.post('/api/auth/login', async (c) => {
       getJwtSecret(),
       { expiresIn: '7d' }
     );
-    return c.json({ token });
+    setCookie(c, SESSION_COOKIE_NAME, token, {
+      httpOnly: true,
+      sameSite: 'Lax',
+      path: '/',
+      maxAge: SESSION_MAX_AGE_SECONDS,
+    });
+    return c.json({ success: true });
   } catch (error) {
     return c.json({ error: String(error) }, 500);
   }
+});
+
+app.post('/api/auth/logout', (c) => {
+  deleteCookie(c, SESSION_COOKIE_NAME, { path: '/' });
+  return c.json({ success: true });
+});
+
+app.get('/api/auth/me', authMiddleware, (c) => {
+  return c.json({ restaurantId: c.get('restaurantId') });
 });
 
 app.get('/api/admin/menu', authMiddleware, (c) => {
@@ -129,9 +148,15 @@ app.post('/api/auth/signup', async (c) => {
 
     const { restaurantId, adminId } = signupTx();
     const token = jwt.sign({ adminId, restaurantId }, getJwtSecret(), { expiresIn: '7d' });
+    setCookie(c, SESSION_COOKIE_NAME, token, {
+      httpOnly: true,
+      sameSite: 'Lax',
+      path: '/',
+      maxAge: SESSION_MAX_AGE_SECONDS,
+    });
 
     return c.json(
-      { token, restaurant: { id: restaurantId, name: restaurantName, slug: finalSlug } },
+      { restaurant: { id: restaurantId, name: restaurantName, slug: finalSlug } },
       201
     );
   } catch (error) {
