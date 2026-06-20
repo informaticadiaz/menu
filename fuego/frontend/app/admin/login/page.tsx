@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiJson } from '@/lib/api';
-import { setToken } from '@/lib/session';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,11 +16,10 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
     try {
-      const { token } = await apiJson<{ token: string }>('/api/auth/login', {
+      await apiJson('/api/auth/login', {
         method: 'POST',
         body: JSON.stringify({ email, password }),
       });
-      setToken(token);
       router.push('/admin');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al iniciar sesión');

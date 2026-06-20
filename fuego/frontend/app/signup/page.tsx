@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiJson } from '@/lib/api';
-import { setToken } from '@/lib/session';
 
 const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
@@ -55,11 +54,10 @@ export default function SignupPage() {
 
     setLoading(true);
     try {
-      const data = await apiJson<{ token: string }>('/api/auth/signup', {
+      await apiJson('/api/auth/signup', {
         method: 'POST',
         body: JSON.stringify({ restaurantName, slug: slug || undefined, email, password }),
       });
-      setToken(data.token);
       router.push('/admin');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al crear la cuenta';

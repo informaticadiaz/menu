@@ -2,20 +2,20 @@
 
 import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { useToken } from '@/lib/session';
+import { useSession } from '@/lib/session';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const isLoginPage = pathname === '/admin/login';
-  const token = useToken();
-  const ready = isLoginPage || token !== null;
+  const session = useSession(pathname);
+  const ready = isLoginPage || session !== 'loading';
 
   useEffect(() => {
-    if (!isLoginPage && !token) {
+    if (!isLoginPage && session === null) {
       router.replace('/admin/login');
     }
-  }, [isLoginPage, token, router]);
+  }, [isLoginPage, session, router]);
 
   if (!ready) return null;
   return <>{children}</>;

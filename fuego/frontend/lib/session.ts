@@ -1,29 +1,22 @@
-import { useSyncExternalStore } from 'react';
+import { useEffect, useState } from 'react';
 
-const TOKEN_KEY = 'fuego_admin_token';
-
-export function getToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  return window.localStorage.getItem(TOKEN_KEY);
+export interface Session {
+  restaurantId: number;
 }
 
-export function setToken(token: string): void {
-  window.localStorage.setItem(TOKEN_KEY, token);
+export async function fetchSession(): Promise<Session | null> {
+  const res = await fetch('/api/auth/me', { credentials: 'include' });
+  if (!res.ok) return null;
+  return res.json();
 }
 
-export function clearToken(): void {
-  window.localStorage.removeItem(TOKEN_KEY);
-}
+/** Consulta /api/auth/me; recibe `key` (el pathname) porque el layout que la usa persiste entre rutas y necesita re-consultar tras un login. */
+export function useSession(key: string): Session | null | 'loading' {
+  const [session, setSession] = useState<Session | null | 'loading'>('loading');
 
-function subscribeToToken(): () => void {
-  return () => {};
-}
+  useEffect(() => {
+    fetchSession().then(setSession);
+  }, [key]);
 
-function getServerToken(): string | null {
-  return null;
-}
-
-/** Reads the auth token without causing a hydration mismatch (localStorage isn't available during SSR). */
-export function useToken(): string | null {
-  return useSyncExternalStore(subscribeToToken, getToken, getServerToken);
+  return session;
 }
