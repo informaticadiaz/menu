@@ -14,9 +14,12 @@ cd backend && npm install && npm run dev   # puerto 3001
 cd frontend && npm install && npm run dev  # puerto 3000
 ```
 
+## Documentacion
+
+- [URLs de negocio](docs/urls-de-negocio.md)
+
 ## Deploy
 
 ```bash
 docker-compose up -d
 ```
-
