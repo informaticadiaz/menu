@@ -21,8 +21,6 @@ export default function AdminPage() {
   }, [router]);
 
   const loadItems = useCallback(async () => {
-    setLoading(true);
-    setError(null);
     try {
       const data = await apiJson<{ items: MenuItem[] }>('/api/admin/menu');
       setItems(data.items);
