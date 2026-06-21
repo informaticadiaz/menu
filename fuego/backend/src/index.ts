@@ -30,6 +30,23 @@ app.use('/uploads/*', serveStatic({ root: './' }));
 initializeDB();
 const db = getDb();
 const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
+const DAILY_SIGNUP_LIMIT_MESSAGE = 'Solo se puede crear una cuenta nueva por día';
+
+function getUtcDayRange(date = new Date()) {
+  const start = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  const end = new Date(start);
+  end.setUTCDate(end.getUTCDate() + 1);
+  return { startIso: start.toISOString(), endIso: end.toISOString() };
+}
+
+function hasRestaurantCreatedToday() {
+  const { startIso, endIso } = getUtcDayRange();
+  return Boolean(
+    db
+      .prepare('SELECT 1 FROM restaurants WHERE created_at >= ? AND created_at < ? LIMIT 1')
+      .get(startIso, endIso)
+  );
+}
 
 app.get('/health', (c) => c.json({ status: 'ok' }));
 
@@ -117,6 +134,10 @@ app.post('/api/auth/signup', async (c) => {
       return c.json({ error: 'restaurantName, email y password requeridos' }, 400);
     }
 
+    if (hasRestaurantCreatedToday()) {
+      return c.json({ error: DAILY_SIGNUP_LIMIT_MESSAGE }, 429);
+    }
+
     const existingAdmin = db.prepare('SELECT 1 FROM admin_users WHERE email = ?').get(email);
     if (existingAdmin) return c.json({ error: 'El email ya está registrado' }, 409);
 
@@ -136,6 +157,9 @@ app.post('/api/auth/signup', async (c) => {
     const now = new Date().toISOString();
 
     const signupTx = db.transaction(() => {
+      if (hasRestaurantCreatedToday()) {
+        throw new Error(DAILY_SIGNUP_LIMIT_MESSAGE);
+      }
       const restaurantResult = db
         .prepare('INSERT INTO restaurants (name, slug, created_at) VALUES (?, ?, ?)')
         .run(restaurantName, finalSlug, now);
@@ -160,6 +184,9 @@ app.post('/api/auth/signup', async (c) => {
       201
     );
   } catch (error) {
+    if (error instanceof Error && error.message === DAILY_SIGNUP_LIMIT_MESSAGE) {
+      return c.json({ error: DAILY_SIGNUP_LIMIT_MESSAGE }, 429);
+    }
     return c.json({ error: String(error) }, 500);
   }
 });
