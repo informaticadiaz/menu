@@ -125,6 +125,54 @@ app.get('/api/auth/me', authMiddleware, (c) => {
   return c.json({ restaurantId: c.get('restaurantId') });
 });
 
+app.get('/api/admin/restaurant', authMiddleware, (c) => {
+  try {
+    const restaurantId = c.get('restaurantId');
+    const restaurant = db
+      .prepare('SELECT id, name, slug, description, logo_url, status FROM restaurants WHERE id = ?')
+      .get(restaurantId) as
+      | { id: number; name: string; slug: string; description: string | null; logo_url: string | null; status: string }
+      | undefined;
+    if (!restaurant) return c.json({ error: 'Restaurante no encontrado' }, 404);
+    return c.json({ restaurant });
+  } catch (error) {
+    return c.json({ error: String(error) }, 500);
+  }
+});
+
+app.put('/api/admin/restaurant', authMiddleware, async (c) => {
+  try {
+    const restaurantId = c.get('restaurantId');
+    const body = await c.req.json();
+    const { name, description, logo_url } = body as { name?: string; description?: string | null; logo_url?: string | null };
+
+    if (name !== undefined && !name.trim()) {
+      return c.json({ error: 'El nombre no puede estar vacío' }, 400);
+    }
+
+    const fields: string[] = [];
+    const values: unknown[] = [];
+    if (name !== undefined) { fields.push('name = ?'); values.push(name.trim()); }
+    if (description !== undefined) { fields.push('description = ?'); values.push(description); }
+    if (logo_url !== undefined) { fields.push('logo_url = ?'); values.push(logo_url); }
+
+    if (fields.length === 0) return c.json({ error: 'Sin campos para actualizar' }, 400);
+
+    fields.push('updated_at = ?');
+    values.push(new Date().toISOString());
+    values.push(restaurantId);
+
+    db.prepare(`UPDATE restaurants SET ${fields.join(', ')} WHERE id = ?`).run(...values);
+
+    const restaurant = db
+      .prepare('SELECT id, name, slug, description, logo_url, status FROM restaurants WHERE id = ?')
+      .get(restaurantId);
+    return c.json({ restaurant });
+  } catch (error) {
+    return c.json({ error: String(error) }, 500);
+  }
+});
+
 app.get('/api/admin/menu', authMiddleware, (c) => {
   try {
     const restaurantId = c.get('restaurantId');
@@ -346,12 +394,12 @@ app.post('/api/auth/signup', async (c) => {
 app.get('/api/menu/:slug', (c) => {
   try {
     const slug = c.req.param('slug');
-    const restaurant = db.prepare('SELECT id, name FROM restaurants WHERE slug = ?').get(slug) as
-      | { id: number; name: string }
+    const restaurant = db.prepare('SELECT id, name, description, logo_url FROM restaurants WHERE slug = ?').get(slug) as
+      | { id: number; name: string; description: string | null; logo_url: string | null }
       | undefined;
     if (!restaurant) return c.json({ error: 'Restaurante no encontrado' }, 404);
     const items = db.prepare('SELECT * FROM menu_items WHERE restaurant_id = ? ORDER BY category, name').all(restaurant.id);
-    return c.json({ restaurant_id: restaurant.id, restaurant_name: restaurant.name, items });
+    return c.json({ restaurant_id: restaurant.id, restaurant_name: restaurant.name, restaurant_description: restaurant.description, restaurant_logo_url: restaurant.logo_url, items });
   } catch (error) {
     return c.json({ error: String(error) }, 500);
   }

@@ -4,7 +4,7 @@
 TBD - created by archiving change public-menu-page. Update Purpose after archive.
 ## Requirements
 ### Requirement: Visualización pública del menú por slug
-El sistema SHALL mostrar en `/menu/[slug]` el menú del restaurante correspondiente a ese slug, sin requerir autenticación, consumiendo `GET /api/menu/:slug`.
+El sistema SHALL mostrar en `/menu/[slug]` el menú del restaurante correspondiente a ese slug, sin requerir autenticación, consumiendo `GET /api/menu/:slug`. El endpoint SHALL incluir `logo_url` y `description` del restaurante en su respuesta.
 
 #### Scenario: Slug válido con items
 - **WHEN** un usuario navega a `/menu/<slug-existente>`
@@ -68,3 +68,22 @@ Las cards de item SHALL distinguir imagen/placeholder, información principal y 
 #### Scenario: Item con descripción larga
 - **WHEN** un item tiene una descripción de varias palabras o frases
 - **THEN** la card mantiene lectura clara y el precio sigue siendo fácil de encontrar
+
+### Requirement: Encabezado de negocio con branding en el menú público
+La página pública del menú SHALL mostrar el logo y la descripción del negocio en el encabezado, cuando estén disponibles.
+
+#### Scenario: Negocio con logo configurado
+- **WHEN** un usuario navega a `/menu/<slug>` y el restaurante tiene `logo_url` definido
+- **THEN** la página muestra el logo del negocio en el encabezado, antes de las categorías de items
+
+#### Scenario: Negocio sin logo
+- **WHEN** un usuario navega a `/menu/<slug>` y el restaurante no tiene `logo_url`
+- **THEN** la página no muestra ningún espacio vacío ni imagen rota; el encabezado muestra solo el nombre del negocio
+
+#### Scenario: Negocio con descripción configurada
+- **WHEN** un usuario navega a `/menu/<slug>` y el restaurante tiene `description` definida
+- **THEN** la página muestra la descripción debajo del nombre del negocio en el encabezado
+
+#### Scenario: Negocio sin descripción
+- **WHEN** un usuario navega a `/menu/<slug>` y el restaurante no tiene `description`
+- **THEN** la página no muestra ningún texto vacío ni placeholder para la descripción

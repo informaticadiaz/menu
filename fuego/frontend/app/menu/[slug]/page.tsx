@@ -8,6 +8,8 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 interface RestaurantMenu {
   restaurant_id: number;
   restaurant_name?: string;
+  restaurant_description?: string | null;
+  restaurant_logo_url?: string | null;
   items: MenuItem[];
 }
 
@@ -72,12 +74,19 @@ export default async function MenuPage({
     <main className="mx-auto w-full max-w-3xl flex-1 space-y-8 px-4 py-6 sm:px-6 sm:py-10">
       <header className="brand-card p-6 sm:p-8">
         <p className="brand-eyebrow">Menú digital</p>
+        {menu.restaurant_logo_url && (
+          <img
+            src={menu.restaurant_logo_url}
+            alt={menu.restaurant_name || slug}
+            className="mt-3 h-16 w-16 rounded-xl object-cover"
+          />
+        )}
         <h1 className="brand-title mt-3 text-3xl sm:text-4xl">
           {menu.restaurant_name || slug}
         </h1>
-        <p className="brand-copy mt-3 max-w-xl">
-          Elegí tu plato y consultá al equipo del restaurante para confirmar disponibilidad.
-        </p>
+        {menu.restaurant_description && (
+          <p className="brand-copy mt-2 max-w-xl">{menu.restaurant_description}</p>
+        )}
       </header>
       {categories.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-stone-300 bg-white p-6 text-center text-stone-600">

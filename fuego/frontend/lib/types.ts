@@ -11,6 +11,15 @@ export interface MenuItem {
   updated_at?: string;
 }
 
+export interface Restaurant {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  logo_url: string | null;
+  status: string;
+}
+
 export interface SystemRestaurant {
   id: number;
   name: string;
