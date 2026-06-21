@@ -62,13 +62,13 @@ export default function MenuPanel({ initialItems }: { initialItems: MenuItem[] }
 
   return (
     <>
-      <div className="flex flex-col gap-4 rounded-3xl border border-stone-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-6">
+      <div className="brand-card flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
         <div className="space-y-2">
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-orange-700">Admin</p>
-          <h1 className="text-2xl font-semibold tracking-tight text-stone-950">Panel de administración</h1>
-          <p className="text-sm leading-6 text-stone-600">Gestioná items, precios y disponibilidad del menú público.</p>
+          <p className="brand-eyebrow">Admin</p>
+          <h1 className="brand-title text-2xl">Panel de administración</h1>
+          <p className="brand-copy">Gestioná items, precios y disponibilidad del menú público.</p>
         </div>
-        <button onClick={handleLogout} className="self-start rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 focus:outline-2 focus:outline-orange-600 sm:self-center">
+        <button onClick={handleLogout} className="btn btn-secondary self-start text-sm sm:self-center">
           Cerrar sesión
         </button>
       </div>
@@ -88,7 +88,7 @@ export default function MenuPanel({ initialItems }: { initialItems: MenuItem[] }
             setEditingItem(null);
             setShowForm(true);
           }}
-          className="rounded-full bg-orange-700 px-5 py-3 font-medium text-white shadow-sm hover:bg-orange-800 focus:outline-2 focus:outline-orange-600"
+          className="btn btn-primary px-5 py-3"
         >
           Nuevo item
         </button>
@@ -99,16 +99,16 @@ export default function MenuPanel({ initialItems }: { initialItems: MenuItem[] }
           <h2 className="border-b border-stone-200 pb-2 text-xl font-semibold tracking-tight text-stone-950">{category}</h2>
           <ul className="space-y-3">
             {categoryItems.map((item) => (
-              <li key={item.id} className="flex min-w-0 flex-col gap-3 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+              <li key={item.id} className="brand-panel flex min-w-0 flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0 space-y-1">
                   <p className="break-words font-semibold text-stone-950">{item.name}</p>
                   <p className="text-sm font-medium text-orange-800">${item.price}</p>
-                  <span className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${item.available ? 'bg-green-50 text-green-700' : 'bg-stone-100 text-stone-500'}`}>
+                  <span className={`badge ${item.available ? 'badge-success' : 'badge-muted'}`}>
                     {item.available ? 'Disponible' : 'No disponible'}
                   </span>
                 </div>
                 <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
-                  <button onClick={() => handleToggleAvailable(item)} className="rounded-full border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 focus:outline-2 focus:outline-orange-600">
+                  <button onClick={() => handleToggleAvailable(item)} className="btn btn-secondary px-3 py-2 text-sm">
                     {item.available ? 'Marcar no disponible' : 'Marcar disponible'}
                   </button>
                   <button
@@ -116,11 +116,11 @@ export default function MenuPanel({ initialItems }: { initialItems: MenuItem[] }
                       setEditingItem(item);
                       setShowForm(true);
                     }}
-                    className="rounded-full border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 focus:outline-2 focus:outline-orange-600"
+                    className="btn btn-secondary px-3 py-2 text-sm"
                   >
                     Editar
                   </button>
-                  <button onClick={() => handleDelete(item)} className="rounded-full border border-red-200 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50 focus:outline-2 focus:outline-red-600">
+                  <button onClick={() => handleDelete(item)} className="btn btn-danger px-3 py-2 text-sm">
                     Eliminar
                   </button>
                 </div>

@@ -76,36 +76,36 @@ export default function MenuItemForm({ initial, onSaved, onCancel }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 rounded-2xl border border-stone-200 bg-white p-5 shadow-sm sm:p-6">
+    <form onSubmit={handleSubmit} className="brand-panel space-y-5 p-5 sm:p-6">
       <div className="space-y-2">
-        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-orange-700">
+        <p className="brand-eyebrow">
           {isEditing ? 'Editar item' : 'Nuevo item'}
         </p>
-        <h2 className="text-xl font-semibold tracking-tight text-stone-950">
+        <h2 className="brand-title text-xl">
           {isEditing ? 'Actualizar plato' : 'Cargar plato al menú'}
         </h2>
-        <p className="text-sm leading-6 text-stone-600">
+        <p className="brand-copy">
           Completá la información visible para clientes y definí si el item está disponible.
         </p>
       </div>
-      <div className="space-y-1">
-        <label className="block text-sm font-medium text-stone-800">Nombre</label>
-        <input className="w-full rounded-xl border border-stone-300 px-3 py-2.5 focus:border-orange-600 focus:outline-2 focus:outline-orange-600" value={name} onChange={(e) => setName(e.target.value)} />
+      <div className="field-group">
+        <label className="field-label">Nombre</label>
+        <input className="field-input" value={name} onChange={(e) => setName(e.target.value)} />
       </div>
-      <div className="space-y-1">
-        <label className="block text-sm font-medium text-stone-800">Categoría</label>
-        <input className="w-full rounded-xl border border-stone-300 px-3 py-2.5 focus:border-orange-600 focus:outline-2 focus:outline-orange-600" value={category} onChange={(e) => setCategory(e.target.value)} />
+      <div className="field-group">
+        <label className="field-label">Categoría</label>
+        <input className="field-input" value={category} onChange={(e) => setCategory(e.target.value)} />
       </div>
-      <div className="space-y-1">
-        <label className="block text-sm font-medium text-stone-800">Descripción</label>
-        <textarea className="min-h-24 w-full rounded-xl border border-stone-300 px-3 py-2.5 focus:border-orange-600 focus:outline-2 focus:outline-orange-600" value={description ?? ''} onChange={(e) => setDescription(e.target.value)} />
+      <div className="field-group">
+        <label className="field-label">Descripción</label>
+        <textarea className="field-textarea" value={description ?? ''} onChange={(e) => setDescription(e.target.value)} />
       </div>
-      <div className="space-y-1">
-        <label className="block text-sm font-medium text-stone-800">Precio</label>
-        <input type="number" min="0" step="0.01" className="w-full rounded-xl border border-stone-300 px-3 py-2.5 focus:border-orange-600 focus:outline-2 focus:outline-orange-600" value={price} onChange={(e) => setPrice(e.target.value)} />
+      <div className="field-group">
+        <label className="field-label">Precio</label>
+        <input type="number" min="0" step="0.01" className="field-input" value={price} onChange={(e) => setPrice(e.target.value)} />
       </div>
       <div className="space-y-2 rounded-xl border border-dashed border-stone-300 bg-stone-50 p-4">
-        <label className="block text-sm font-medium text-stone-800">Imagen</label>
+        <label className="field-label">Imagen</label>
         <input className="w-full text-sm text-stone-700 file:mr-3 file:rounded-full file:border-0 file:bg-stone-900 file:px-3 file:py-2 file:text-sm file:font-medium file:text-white disabled:opacity-60" type="file" accept="image/jpeg,image/png,image/webp" onChange={handleImageChange} disabled={uploading} />
         {uploading && <p className="text-sm text-stone-600">Subiendo imagen…</p>}
         {imageUrl && <p className="text-sm font-medium text-green-700">Imagen cargada correctamente</p>}
@@ -114,12 +114,12 @@ export default function MenuItemForm({ initial, onSaved, onCancel }: Props) {
         <input type="checkbox" checked={available} onChange={(e) => setAvailable(e.target.checked)} className="h-4 w-4 accent-orange-700" />
         Disponible
       </label>
-      {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+      {error && <p className="notice notice-error">{error}</p>}
       <div className="flex flex-col gap-2 sm:flex-row">
-        <button type="submit" disabled={saving || uploading} className="rounded-full bg-orange-700 px-5 py-3 font-medium text-white shadow-sm hover:bg-orange-800 focus:outline-2 focus:outline-orange-600 disabled:cursor-not-allowed disabled:opacity-60">
+        <button type="submit" disabled={saving || uploading} className="btn btn-primary px-5 py-3">
           {saving ? 'Guardando…' : 'Guardar'}
         </button>
-        <button type="button" onClick={onCancel} className="rounded-full border border-stone-300 px-5 py-3 font-medium text-stone-700 hover:bg-stone-50 focus:outline-2 focus:outline-orange-600">
+        <button type="button" onClick={onCancel} className="btn btn-secondary px-5 py-3">
           Cancelar
         </button>
       </div>
