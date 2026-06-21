@@ -249,6 +249,25 @@ app.post('/api/system/restaurants/:id/reactivate', systemAuthMiddleware, (c) => 
   }
 });
 
+app.post('/api/system/restaurants/:id/reset-password', systemAuthMiddleware, async (c) => {
+  try {
+    const id = c.req.param('id');
+    const { password } = await c.req.json();
+    if (!password) return c.json({ error: 'password requerido' }, 400);
+
+    const admin = db.prepare('SELECT id FROM admin_users WHERE restaurant_id = ?').get(id) as
+      | { id: number }
+      | undefined;
+    if (!admin) return c.json({ error: 'Negocio no encontrado' }, 404);
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    db.prepare('UPDATE admin_users SET password_hash = ? WHERE id = ?').run(passwordHash, admin.id);
+    return c.json({ success: true });
+  } catch (error) {
+    return c.json({ error: String(error) }, 500);
+  }
+});
+
 app.delete('/api/system/restaurants/:id', systemAuthMiddleware, (c) => {
   try {
     const id = c.req.param('id');
