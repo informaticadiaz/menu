@@ -1,10 +1,4 @@
-# admin-auth Specification
-
-## Purpose
-
-Autenticar a los administradores de un restaurante para el panel de administración y autorizar las operaciones de escritura sobre su propio menú.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Login de administrador
 El sistema SHALL permitir a un administrador autenticarse con email y password contra la tabla `admin_users`, emitiendo una cookie httpOnly con un JWT firmado si las credenciales son válidas y el negocio asociado está activo.
@@ -59,17 +53,6 @@ El sistema SHALL exponer `GET /api/admin/menu`, protegido por JWT, que devuelve 
 - **WHEN** un admin con JWT válido de un negocio pausado solicita `GET /api/admin/menu`
 - **THEN** el sistema responde 403 y no devuelve los items
 
-### Requirement: Logout de administrador
-El sistema SHALL exponer `POST /api/auth/logout` que invalida la cookie de sesión del admin autenticado.
-
-#### Scenario: Logout exitoso
-- **WHEN** un admin con sesión activa envía `POST /api/auth/logout`
-- **THEN** el sistema responde 200 y emite un `Set-Cookie` que borra la cookie de sesión (expira inmediatamente)
-
-#### Scenario: Logout sin sesión activa
-- **WHEN** se envía `POST /api/auth/logout` sin cookie de sesión válida
-- **THEN** el sistema responde 200 igual (el logout es idempotente; no es un error no tener sesión)
-
 ### Requirement: Consulta de estado de sesión
 El sistema SHALL exponer `GET /api/auth/me`, protegido por la misma validación de cookie que las rutas de escritura, para que un cliente sin acceso a la cookie httpOnly pueda saber si hay sesión activa y si el negocio sigue activo.
 
@@ -84,24 +67,3 @@ El sistema SHALL exponer `GET /api/auth/me`, protegido por la misma validación 
 #### Scenario: Sesión de negocio pausado
 - **WHEN** se envía `GET /api/auth/me` con una cookie válida de un negocio pausado
 - **THEN** el sistema responde 403 indicando que la cuenta está pausada
-
-### Requirement: Login admin visual polish
-El login admin SHALL presentar el acceso de forma clara, consistente con el resto de la UI, con estados de foco, error y carga visibles.
-
-#### Scenario: Admin inicia sesión
-- **WHEN** un admin navega a `/admin/login`
-- **THEN** ve un formulario de acceso legible, centrado y con jerarquía clara entre título, campos, error y acción principal
-
-### Requirement: Panel admin mobile usable
-El panel administrativo SHALL permitir leer items y ejecutar acciones existentes sin desbordes horizontales en mobile.
-
-#### Scenario: Admin gestiona item en celular
-- **WHEN** el panel se renderiza en un viewport de 320–480px
-- **THEN** nombre, precio, disponibilidad y botones de acción se muestran sin scroll horizontal ni texto crítico cortado
-
-### Requirement: Formulario de item contextual
-El formulario de creación/edición de item SHALL indicar claramente si se está creando o editando y presentar campos, imagen, disponibilidad y acciones con jerarquía visual clara.
-
-#### Scenario: Admin abre formulario de item
-- **WHEN** el admin abre el formulario para crear o editar un item
-- **THEN** la pantalla muestra contexto de la acción y controles legibles para guardar o cancelar

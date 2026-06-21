@@ -10,3 +10,12 @@ export interface MenuItem {
   created_at?: string;
   updated_at?: string;
 }
+
+export interface SystemRestaurant {
+  id: number;
+  name: string;
+  slug: string;
+  status: 'active' | 'paused';
+  created_at: string;
+  admin_email: string | null;
+}

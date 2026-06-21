@@ -7,14 +7,14 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { initializeDB } from './db/init';
 import { getDb } from './db/schema';
-import { getJwtSecret, SESSION_COOKIE_NAME, SESSION_MAX_AGE_SECONDS } from './auth';
-import { authMiddleware } from './middleware/auth';
+import { getJwtSecret, getSystemJwtSecret, SESSION_COOKIE_NAME, SESSION_MAX_AGE_SECONDS, SYSTEM_SESSION_COOKIE_NAME } from './auth';
+import { authMiddleware, systemAuthMiddleware } from './middleware/auth';
 import { slugify, isValidSlug, resolveAvailableSlug } from './slug';
 import { randomUUID } from 'crypto';
 import { mkdir, writeFile } from 'fs/promises';
 import path from 'path';
 
-const app = new Hono<{ Variables: { adminId: number; restaurantId: number } }>();
+const app = new Hono<{ Variables: { adminId: number; restaurantId: number; systemAdminId: number } }>();
 
 const ALLOWED_ORIGINS = [process.env.FRONTEND_URL || 'http://localhost:3000'];
 
@@ -83,11 +83,21 @@ app.post('/api/auth/login', async (c) => {
     if (!email || !password) {
       return c.json({ error: 'email y password requeridos' }, 400);
     }
-    const admin = db.prepare('SELECT * FROM admin_users WHERE email = ?').get(email) as
-      | { id: number; restaurant_id: number; password_hash: string }
+    const admin = db
+      .prepare(
+        `SELECT admin_users.id, admin_users.restaurant_id, admin_users.password_hash, restaurants.status
+         FROM admin_users
+         JOIN restaurants ON restaurants.id = admin_users.restaurant_id
+         WHERE admin_users.email = ?`
+      )
+      .get(email) as
+      | { id: number; restaurant_id: number; password_hash: string; status: string }
       | undefined;
     if (!admin || !(await bcrypt.compare(password, admin.password_hash))) {
       return c.json({ error: 'Credenciales inválidas' }, 401);
+    }
+    if (admin.status === 'paused') {
+      return c.json({ error: 'Cuenta pausada' }, 403);
     }
     const token = jwt.sign(
       { adminId: admin.id, restaurantId: admin.restaurant_id },
@@ -127,6 +137,129 @@ app.get('/api/admin/menu', authMiddleware, (c) => {
   }
 });
 
+app.post('/api/system/auth/login', async (c) => {
+  try {
+    const { email, password } = await c.req.json();
+    if (!email || !password) {
+      return c.json({ error: 'email y password requeridos' }, 400);
+    }
+    const admin = db.prepare('SELECT id, password_hash FROM system_admin_users WHERE email = ?').get(email) as
+      | { id: number; password_hash: string }
+      | undefined;
+    if (!admin || !(await bcrypt.compare(password, admin.password_hash))) {
+      return c.json({ error: 'Credenciales inválidas' }, 401);
+    }
+    const token = jwt.sign({ systemAdminId: admin.id }, getSystemJwtSecret(), { expiresIn: '7d' });
+    setCookie(c, SYSTEM_SESSION_COOKIE_NAME, token, {
+      httpOnly: true,
+      sameSite: 'Lax',
+      path: '/',
+      maxAge: SESSION_MAX_AGE_SECONDS,
+    });
+    return c.json({ success: true });
+  } catch (error) {
+    return c.json({ error: String(error) }, 500);
+  }
+});
+
+app.post('/api/system/auth/logout', (c) => {
+  deleteCookie(c, SYSTEM_SESSION_COOKIE_NAME, { path: '/' });
+  return c.json({ success: true });
+});
+
+app.get('/api/system/auth/me', systemAuthMiddleware, (c) => {
+  return c.json({ systemAdminId: c.get('systemAdminId') });
+});
+
+app.get('/api/system/restaurants', systemAuthMiddleware, (c) => {
+  try {
+    const restaurants = db
+      .prepare(
+        `SELECT restaurants.id, restaurants.name, restaurants.slug, restaurants.status, restaurants.created_at,
+                admin_users.email AS admin_email
+         FROM restaurants
+         LEFT JOIN admin_users ON admin_users.restaurant_id = restaurants.id
+         ORDER BY restaurants.created_at DESC, restaurants.name`
+      )
+      .all();
+    return c.json({ restaurants });
+  } catch (error) {
+    return c.json({ error: String(error) }, 500);
+  }
+});
+
+app.post('/api/system/restaurants', systemAuthMiddleware, async (c) => {
+  try {
+    const { restaurantName, slug, email, password } = await c.req.json();
+    if (!restaurantName || !email || !password) {
+      return c.json({ error: 'restaurantName, email y password requeridos' }, 400);
+    }
+
+    const existingAdmin = db.prepare('SELECT 1 FROM admin_users WHERE email = ?').get(email);
+    if (existingAdmin) return c.json({ error: 'El email ya está registrado' }, 409);
+
+    let finalSlug: string;
+    if (slug) {
+      if (!isValidSlug(slug)) return c.json({ error: 'Formato de slug inválido' }, 400);
+      const slugTaken = db.prepare('SELECT 1 FROM restaurants WHERE slug = ?').get(slug);
+      if (slugTaken) return c.json({ error: 'El slug ya está en uso' }, 409);
+      finalSlug = slug;
+    } else {
+      finalSlug = resolveAvailableSlug(slugify(restaurantName));
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const now = new Date().toISOString();
+    const createRestaurantTx = db.transaction(() => {
+      const restaurantResult = db
+        .prepare('INSERT INTO restaurants (name, slug, status, created_at) VALUES (?, ?, ?, ?)')
+        .run(restaurantName, finalSlug, 'active', now);
+      const restaurantId = restaurantResult.lastInsertRowid as number;
+      db.prepare('INSERT INTO admin_users (restaurant_id, email, password_hash) VALUES (?, ?, ?)')
+        .run(restaurantId, email, passwordHash);
+      return restaurantId;
+    });
+
+    const restaurantId = createRestaurantTx();
+    return c.json({ restaurant: { id: restaurantId, name: restaurantName, slug: finalSlug, status: 'active', admin_email: email, created_at: now } }, 201);
+  } catch (error) {
+    return c.json({ error: String(error) }, 500);
+  }
+});
+
+app.post('/api/system/restaurants/:id/pause', systemAuthMiddleware, (c) => {
+  try {
+    const id = c.req.param('id');
+    const result = db.prepare("UPDATE restaurants SET status = 'paused', updated_at = ? WHERE id = ?").run(new Date().toISOString(), id);
+    if (result.changes === 0) return c.json({ error: 'Negocio no encontrado' }, 404);
+    return c.json({ success: true });
+  } catch (error) {
+    return c.json({ error: String(error) }, 500);
+  }
+});
+
+app.post('/api/system/restaurants/:id/reactivate', systemAuthMiddleware, (c) => {
+  try {
+    const id = c.req.param('id');
+    const result = db.prepare("UPDATE restaurants SET status = 'active', updated_at = ? WHERE id = ?").run(new Date().toISOString(), id);
+    if (result.changes === 0) return c.json({ error: 'Negocio no encontrado' }, 404);
+    return c.json({ success: true });
+  } catch (error) {
+    return c.json({ error: String(error) }, 500);
+  }
+});
+
+app.delete('/api/system/restaurants/:id', systemAuthMiddleware, (c) => {
+  try {
+    const id = c.req.param('id');
+    const result = db.prepare('DELETE FROM restaurants WHERE id = ?').run(id);
+    if (result.changes === 0) return c.json({ error: 'Negocio no encontrado' }, 404);
+    return c.json({ success: true });
+  } catch (error) {
+    return c.json({ error: String(error) }, 500);
+  }
+});
+
 app.post('/api/auth/signup', async (c) => {
   try {
     const { restaurantName, slug, email, password } = await c.req.json();
@@ -161,8 +294,8 @@ app.post('/api/auth/signup', async (c) => {
         throw new Error(DAILY_SIGNUP_LIMIT_MESSAGE);
       }
       const restaurantResult = db
-        .prepare('INSERT INTO restaurants (name, slug, created_at) VALUES (?, ?, ?)')
-        .run(restaurantName, finalSlug, now);
+        .prepare('INSERT INTO restaurants (name, slug, status, created_at) VALUES (?, ?, ?, ?)')
+        .run(restaurantName, finalSlug, 'active', now);
       const restaurantId = restaurantResult.lastInsertRowid as number;
       const adminResult = db
         .prepare('INSERT INTO admin_users (restaurant_id, email, password_hash) VALUES (?, ?, ?)')

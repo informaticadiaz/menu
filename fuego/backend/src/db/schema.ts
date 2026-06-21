@@ -24,6 +24,7 @@ export const schema = {
       slug TEXT UNIQUE NOT NULL,
       description TEXT,
       logo_url TEXT,
+      status TEXT NOT NULL DEFAULT 'active',
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
@@ -51,6 +52,14 @@ export const schema = {
       password_hash TEXT NOT NULL,
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (restaurant_id) REFERENCES restaurants(id) ON DELETE CASCADE
+    )
+  `,
+  system_admin_users: `
+    CREATE TABLE IF NOT EXISTS system_admin_users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
   `,
 };
