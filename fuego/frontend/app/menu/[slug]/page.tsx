@@ -56,8 +56,8 @@ export default async function MenuPage({
   } catch {
     return (
       <main className="mx-auto flex max-w-md flex-1 flex-col items-center justify-center gap-3 px-4 py-12 text-center">
-        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-orange-700">Fuego</p>
-        <h1 className="text-2xl font-semibold tracking-tight text-stone-950">Algo salió mal</h1>
+        <p className="brand-eyebrow">Fuego</p>
+        <h1 className="brand-title text-2xl">Algo salió mal</h1>
         <p className="leading-6 text-stone-600">No pudimos cargar el menú. Probá de nuevo más tarde.</p>
       </main>
     );
@@ -70,12 +70,12 @@ export default async function MenuPage({
 
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 space-y-8 px-4 py-6 sm:px-6 sm:py-10">
-      <header className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm sm:p-8">
-        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-orange-700">Menú digital</p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-stone-950 sm:text-4xl">
+      <header className="brand-card p-6 sm:p-8">
+        <p className="brand-eyebrow">Menú digital</p>
+        <h1 className="brand-title mt-3 text-3xl sm:text-4xl">
           {menu.restaurant_name || slug}
         </h1>
-        <p className="mt-3 max-w-xl text-sm leading-6 text-stone-600">
+        <p className="brand-copy mt-3 max-w-xl">
           Elegí tu plato y consultá al equipo del restaurante para confirmar disponibilidad.
         </p>
       </header>

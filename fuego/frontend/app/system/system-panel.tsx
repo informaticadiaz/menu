@@ -58,31 +58,31 @@ export default function SystemPanel({ initialRestaurants }: { initialRestaurants
   }
 
   return (
-    <main className="min-h-screen bg-stone-950 px-4 py-6 text-white sm:px-6 sm:py-10">
+    <main className="min-h-screen px-4 py-6 sm:px-6 sm:py-10">
       <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[360px_1fr]">
-        <section className="space-y-4 rounded-3xl border border-white/10 bg-white p-5 text-stone-950 shadow-xl sm:p-6">
+        <section className="brand-card space-y-4 p-5 sm:p-6">
           <div className="space-y-2">
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-stone-500">Sistema</p>
-            <h1 className="text-2xl font-semibold tracking-tight">Negocios registrados</h1>
-            <p className="text-sm leading-6 text-stone-600">Panel interno para crear, pausar, reactivar o eliminar negocios.</p>
+            <p className="brand-eyebrow">Sistema</p>
+            <h1 className="brand-title text-2xl">Negocios registrados</h1>
+            <p className="brand-copy">Panel interno para crear, pausar, reactivar o eliminar negocios.</p>
           </div>
-          <button onClick={handleLogout} className="rounded-full border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 focus:outline-2 focus:outline-stone-950">
+          <button onClick={handleLogout} className="btn btn-secondary px-4 py-2 text-sm">
             Cerrar sesión
           </button>
           <form onSubmit={handleCreate} className="space-y-3 border-t border-stone-200 pt-4">
-            <h2 className="font-semibold tracking-tight">Crear negocio</h2>
-            <input required placeholder="Nombre del negocio" value={restaurantName} onChange={(e) => setRestaurantName(e.target.value)} className="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm focus:border-stone-950 focus:outline-2 focus:outline-stone-950" />
-            <input placeholder="slug opcional" value={slug} onChange={(e) => setSlug(e.target.value)} className="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm focus:border-stone-950 focus:outline-2 focus:outline-stone-950" />
-            <input required type="email" placeholder="Email admin del negocio" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm focus:border-stone-950 focus:outline-2 focus:outline-stone-950" />
-            <input required type="password" placeholder="Contraseña inicial" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm focus:border-stone-950 focus:outline-2 focus:outline-stone-950" />
-            {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-            <button disabled={saving} className="w-full rounded-full bg-stone-950 px-4 py-3 text-sm font-medium text-white hover:bg-stone-800 focus:outline-2 focus:outline-stone-950 disabled:cursor-not-allowed disabled:opacity-60">
+            <h2 className="brand-title">Crear negocio</h2>
+            <input required placeholder="Nombre del negocio" value={restaurantName} onChange={(e) => setRestaurantName(e.target.value)} className="field-input text-sm" />
+            <input placeholder="slug opcional" value={slug} onChange={(e) => setSlug(e.target.value)} className="field-input text-sm" />
+            <input required type="email" placeholder="Email admin del negocio" value={email} onChange={(e) => setEmail(e.target.value)} className="field-input text-sm" />
+            <input required type="password" placeholder="Contraseña inicial" value={password} onChange={(e) => setPassword(e.target.value)} className="field-input text-sm" />
+            {error && <p className="notice notice-error">{error}</p>}
+            <button disabled={saving} className="btn btn-primary w-full py-3 text-sm">
               {saving ? 'Creando...' : 'Crear negocio'}
             </button>
           </form>
         </section>
 
-        <section className="overflow-hidden rounded-3xl border border-white/10 bg-white text-stone-950 shadow-xl">
+        <section className="brand-card overflow-hidden">
           <div className="border-b border-stone-200 px-5 py-4 sm:px-6">
             <p className="text-sm font-medium text-stone-600">Total: {restaurants.length}</p>
           </div>
@@ -91,8 +91,8 @@ export default function SystemPanel({ initialRestaurants }: { initialRestaurants
               <li key={restaurant.id} className="grid gap-4 px-5 py-4 sm:px-6 lg:grid-cols-[1fr_auto] lg:items-center">
                 <div className="min-w-0 space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="break-words text-lg font-semibold tracking-tight">{restaurant.name}</h2>
-                    <span className={`rounded-full px-2 py-1 text-xs font-medium ${restaurant.status === 'active' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}>
+                    <h2 className="brand-title break-words text-lg">{restaurant.name}</h2>
+                    <span className={`badge ${restaurant.status === 'active' ? 'badge-success' : 'badge-warning'}`}>
                       {restaurant.status === 'active' ? 'Activo' : 'Pausado'}
                     </span>
                   </div>
@@ -110,7 +110,7 @@ export default function SystemPanel({ initialRestaurants }: { initialRestaurants
                       Reactivar
                     </button>
                   )}
-                  <button onClick={() => handleDelete(restaurant)} className="rounded-full border border-red-200 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50 focus:outline-2 focus:outline-red-600">
+                  <button onClick={() => handleDelete(restaurant)} className="btn btn-danger px-3 py-2 text-sm">
                     Eliminar
                   </button>
                 </div>

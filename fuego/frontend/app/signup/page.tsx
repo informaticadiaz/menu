@@ -76,17 +76,17 @@ export default function SignupPage() {
 
   return (
     <main className="flex flex-1 items-center justify-center px-4 py-10">
-      <form onSubmit={handleSubmit} className="w-full max-w-md space-y-5 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm sm:p-8">
+      <form onSubmit={handleSubmit} className="brand-card w-full max-w-md space-y-5 p-6 sm:p-8">
         <div className="space-y-2">
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-orange-700">Nuevo menú</p>
-          <h1 className="text-2xl font-semibold tracking-tight text-stone-950">Crear tu restaurante</h1>
-          <p className="text-sm leading-6 text-stone-600">
+          <p className="brand-eyebrow">Nuevo menú</p>
+          <h1 className="brand-title text-2xl">Crear tu restaurante</h1>
+          <p className="brand-copy">
             Estos datos crean tu cuenta admin y la dirección pública que vas a compartir con tus clientes.
           </p>
         </div>
 
-        <div className="space-y-1">
-          <label htmlFor="restaurantName" className="block text-sm font-medium text-stone-800">
+        <div className="field-group">
+          <label htmlFor="restaurantName" className="field-label">
             Nombre del restaurante
           </label>
           <input
@@ -95,13 +95,13 @@ export default function SignupPage() {
             required
             value={restaurantName}
             onChange={(e) => handleRestaurantNameChange(e.target.value)}
-            className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-stone-950 placeholder:text-stone-400 focus:border-orange-600 focus:outline-2 focus:outline-orange-600"
+            className="field-input"
           />
           {errors.restaurantName && <p className="text-sm text-red-600">{errors.restaurantName}</p>}
         </div>
 
-        <div className="space-y-1">
-          <label htmlFor="slug" className="block text-sm font-medium text-stone-800">
+        <div className="field-group">
+          <label htmlFor="slug" className="field-label">
             Slug (URL del menú)
           </label>
           <input
@@ -109,46 +109,46 @@ export default function SignupPage() {
             type="text"
             value={slug}
             onChange={(e) => handleSlugChange(e.target.value)}
-            className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-stone-950 placeholder:text-stone-400 focus:border-orange-600 focus:outline-2 focus:outline-orange-600"
+            className="field-input"
           />
-          <p className="rounded-lg bg-stone-50 px-3 py-2 text-sm text-stone-600">
+          <p className="notice bg-stone-50 text-stone-600">
             Tu menú público quedará en <span className="font-medium text-stone-900">{publicMenuPath}</span>.
           </p>
           {errors.slug && <p className="text-sm text-red-600">{errors.slug}</p>}
         </div>
 
-        <div className="space-y-1">
-          <label htmlFor="email" className="block text-sm font-medium text-stone-800">Email</label>
+        <div className="field-group">
+          <label htmlFor="email" className="field-label">Email</label>
           <input
             id="email"
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-stone-950 placeholder:text-stone-400 focus:border-orange-600 focus:outline-2 focus:outline-orange-600"
+            className="field-input"
           />
           {errors.email && <p className="text-sm text-red-600">{errors.email}</p>}
         </div>
 
-        <div className="space-y-1">
-          <label htmlFor="password" className="block text-sm font-medium text-stone-800">Contraseña</label>
+        <div className="field-group">
+          <label htmlFor="password" className="field-label">Contraseña</label>
           <input
             id="password"
             type="password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-stone-950 placeholder:text-stone-400 focus:border-orange-600 focus:outline-2 focus:outline-orange-600"
+            className="field-input"
           />
           {errors.password && <p className="text-sm text-red-600">{errors.password}</p>}
         </div>
 
-        {errors.form && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{errors.form}</p>}
+        {errors.form && <p className="notice notice-error">{errors.form}</p>}
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-full bg-orange-700 px-4 py-3 font-medium text-white shadow-sm hover:bg-orange-800 focus:outline-2 focus:outline-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
+          className="btn btn-primary w-full py-3"
         >
           {loading ? 'Creando…' : 'Crear cuenta'}
         </button>

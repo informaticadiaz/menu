@@ -29,23 +29,23 @@ export default function SystemLoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-stone-950 px-4 py-10 text-stone-950">
-      <form onSubmit={handleSubmit} className="w-full max-w-md space-y-5 rounded-2xl border border-stone-800 bg-white p-6 shadow-xl sm:p-8">
+    <main className="flex min-h-screen items-center justify-center px-4 py-10">
+      <form onSubmit={handleSubmit} className="brand-card w-full max-w-md space-y-5 p-6 sm:p-8">
         <div className="space-y-2">
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-stone-500">Sistema</p>
-          <h1 className="text-2xl font-semibold tracking-tight">Panel interno</h1>
-          <p className="text-sm leading-6 text-stone-600">Acceso privado para administrar los negocios registrados en Fuego.</p>
+          <p className="brand-eyebrow">Sistema</p>
+          <h1 className="brand-title text-2xl">Panel interno</h1>
+          <p className="brand-copy">Acceso privado para administrar los negocios registrados en Fuego.</p>
         </div>
-        <div className="space-y-1">
-          <label htmlFor="email" className="block text-sm font-medium text-stone-800">Email</label>
-          <input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full rounded-xl border border-stone-300 px-3 py-2.5 focus:border-stone-950 focus:outline-2 focus:outline-stone-950" />
+        <div className="field-group">
+          <label htmlFor="email" className="field-label">Email</label>
+          <input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="field-input" />
         </div>
-        <div className="space-y-1">
-          <label htmlFor="password" className="block text-sm font-medium text-stone-800">Contraseña</label>
-          <input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full rounded-xl border border-stone-300 px-3 py-2.5 focus:border-stone-950 focus:outline-2 focus:outline-stone-950" />
+        <div className="field-group">
+          <label htmlFor="password" className="field-label">Contraseña</label>
+          <input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="field-input" />
         </div>
-        {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-        <button type="submit" disabled={loading} className="w-full rounded-full bg-stone-950 px-4 py-3 font-medium text-white hover:bg-stone-800 focus:outline-2 focus:outline-stone-950 disabled:cursor-not-allowed disabled:opacity-60">
+        {error && <p className="notice notice-error">{error}</p>}
+        <button type="submit" disabled={loading} className="btn btn-primary w-full py-3">
           {loading ? 'Ingresando...' : 'Ingresar al sistema'}
         </button>
       </form>
