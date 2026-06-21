@@ -62,9 +62,13 @@ export default function MenuPanel({ initialItems }: { initialItems: MenuItem[] }
 
   return (
     <>
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Panel de administración</h1>
-        <button onClick={handleLogout} className="rounded border px-3 py-2 text-sm">
+      <div className="flex flex-col gap-4 rounded-3xl border border-stone-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-6">
+        <div className="space-y-2">
+          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-orange-700">Admin</p>
+          <h1 className="text-2xl font-semibold tracking-tight text-stone-950">Panel de administración</h1>
+          <p className="text-sm leading-6 text-stone-600">Gestioná items, precios y disponibilidad del menú público.</p>
+        </div>
+        <button onClick={handleLogout} className="self-start rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 focus:outline-2 focus:outline-orange-600 sm:self-center">
           Cerrar sesión
         </button>
       </div>
@@ -84,27 +88,27 @@ export default function MenuPanel({ initialItems }: { initialItems: MenuItem[] }
             setEditingItem(null);
             setShowForm(true);
           }}
-          className="rounded bg-black px-3 py-2 text-white"
+          className="rounded-full bg-orange-700 px-5 py-3 font-medium text-white shadow-sm hover:bg-orange-800 focus:outline-2 focus:outline-orange-600"
         >
           Nuevo item
         </button>
       )}
 
       {Object.entries(grouped).map(([category, categoryItems]) => (
-        <section key={category} className="space-y-2">
-          <h2 className="text-lg font-medium">{category}</h2>
-          <ul className="space-y-2">
+        <section key={category} className="space-y-3">
+          <h2 className="border-b border-stone-200 pb-2 text-xl font-semibold tracking-tight text-stone-950">{category}</h2>
+          <ul className="space-y-3">
             {categoryItems.map((item) => (
-              <li key={item.id} className="flex items-center justify-between rounded border p-3">
-                <div>
-                  <p className="font-medium">{item.name}</p>
-                  <p className="text-sm text-gray-500">${item.price}</p>
-                  <span className={`text-xs ${item.available ? 'text-green-600' : 'text-gray-400'}`}>
+              <li key={item.id} className="flex min-w-0 flex-col gap-3 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0 space-y-1">
+                  <p className="break-words font-semibold text-stone-950">{item.name}</p>
+                  <p className="text-sm font-medium text-orange-800">${item.price}</p>
+                  <span className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${item.available ? 'bg-green-50 text-green-700' : 'bg-stone-100 text-stone-500'}`}>
                     {item.available ? 'Disponible' : 'No disponible'}
                   </span>
                 </div>
-                <div className="flex gap-2">
-                  <button onClick={() => handleToggleAvailable(item)} className="rounded border px-2 py-1 text-sm">
+                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
+                  <button onClick={() => handleToggleAvailable(item)} className="rounded-full border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 focus:outline-2 focus:outline-orange-600">
                     {item.available ? 'Marcar no disponible' : 'Marcar disponible'}
                   </button>
                   <button
@@ -112,11 +116,11 @@ export default function MenuPanel({ initialItems }: { initialItems: MenuItem[] }
                       setEditingItem(item);
                       setShowForm(true);
                     }}
-                    className="rounded border px-2 py-1 text-sm"
+                    className="rounded-full border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 focus:outline-2 focus:outline-orange-600"
                   >
                     Editar
                   </button>
-                  <button onClick={() => handleDelete(item)} className="rounded border px-2 py-1 text-sm text-red-600">
+                  <button onClick={() => handleDelete(item)} className="rounded-full border border-red-200 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50 focus:outline-2 focus:outline-red-600">
                     Eliminar
                   </button>
                 </div>

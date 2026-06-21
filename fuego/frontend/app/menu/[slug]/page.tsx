@@ -55,9 +55,10 @@ export default async function MenuPage({
     menu = await getRestaurantMenu(slug);
   } catch {
     return (
-      <main className="mx-auto flex max-w-md flex-1 flex-col items-center justify-center gap-2 p-4 text-center">
-        <h1 className="text-xl font-semibold">Algo salió mal</h1>
-        <p className="text-gray-500">No pudimos cargar el menú. Probá de nuevo más tarde.</p>
+      <main className="mx-auto flex max-w-md flex-1 flex-col items-center justify-center gap-3 px-4 py-12 text-center">
+        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-orange-700">Fuego</p>
+        <h1 className="text-2xl font-semibold tracking-tight text-stone-950">Algo salió mal</h1>
+        <p className="leading-6 text-stone-600">No pudimos cargar el menú. Probá de nuevo más tarde.</p>
       </main>
     );
   }
@@ -68,10 +69,20 @@ export default async function MenuPage({
   const categories = Object.entries(grouped);
 
   return (
-    <main className="mx-auto max-w-3xl flex-1 space-y-6 p-4 sm:p-6">
-      <h1 className="text-xl font-semibold sm:text-2xl">{menu.restaurant_name || slug}</h1>
+    <main className="mx-auto w-full max-w-3xl flex-1 space-y-8 px-4 py-6 sm:px-6 sm:py-10">
+      <header className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm sm:p-8">
+        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-orange-700">Menú digital</p>
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-stone-950 sm:text-4xl">
+          {menu.restaurant_name || slug}
+        </h1>
+        <p className="mt-3 max-w-xl text-sm leading-6 text-stone-600">
+          Elegí tu plato y consultá al equipo del restaurante para confirmar disponibilidad.
+        </p>
+      </header>
       {categories.length === 0 ? (
-        <p className="text-gray-500">No hay items disponibles en este momento.</p>
+        <div className="rounded-2xl border border-dashed border-stone-300 bg-white p-6 text-center text-stone-600">
+          No hay items disponibles en este momento.
+        </div>
       ) : (
         categories.map(([category, items]) => (
           <MenuCategorySection key={category} category={category} items={items} />

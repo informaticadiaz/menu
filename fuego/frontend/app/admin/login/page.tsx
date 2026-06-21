@@ -29,36 +29,42 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex flex-1 items-center justify-center p-4">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4 rounded-lg border p-6">
-        <h1 className="text-xl font-semibold">Acceso administrador</h1>
+    <main className="flex flex-1 items-center justify-center px-4 py-10">
+      <form onSubmit={handleSubmit} className="w-full max-w-md space-y-5 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm sm:p-8">
+        <div className="space-y-2">
+          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-orange-700">Admin</p>
+          <h1 className="text-2xl font-semibold tracking-tight text-stone-950">Acceso administrador</h1>
+          <p className="text-sm leading-6 text-stone-600">
+            Entrá para actualizar platos, precios, disponibilidad e imágenes de tu menú.
+          </p>
+        </div>
         <div className="space-y-1">
-          <label htmlFor="email" className="block text-sm font-medium">Email</label>
+          <label htmlFor="email" className="block text-sm font-medium text-stone-800">Email</label>
           <input
             id="email"
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded border px-3 py-2"
+            className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-stone-950 placeholder:text-stone-400 focus:border-orange-600 focus:outline-2 focus:outline-orange-600"
           />
         </div>
         <div className="space-y-1">
-          <label htmlFor="password" className="block text-sm font-medium">Contraseña</label>
+          <label htmlFor="password" className="block text-sm font-medium text-stone-800">Contraseña</label>
           <input
             id="password"
             type="password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded border px-3 py-2"
+            className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-stone-950 placeholder:text-stone-400 focus:border-orange-600 focus:outline-2 focus:outline-orange-600"
           />
         </div>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded bg-black px-3 py-2 text-white disabled:opacity-50"
+          className="w-full rounded-full bg-orange-700 px-4 py-3 font-medium text-white shadow-sm hover:bg-orange-800 focus:outline-2 focus:outline-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading ? 'Ingresando…' : 'Ingresar'}
         </button>

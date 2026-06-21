@@ -21,7 +21,7 @@ export default async function AdminPage() {
   if (!items) redirect('/admin/login');
 
   return (
-    <main className="mx-auto max-w-3xl flex-1 p-4 space-y-6">
+    <main className="mx-auto w-full max-w-4xl flex-1 space-y-6 px-4 py-6 sm:px-6 sm:py-10">
       <MenuPanel initialItems={items} />
     </main>
   );
