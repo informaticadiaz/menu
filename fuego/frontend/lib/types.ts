@@ -17,6 +17,7 @@ export interface Restaurant {
   slug: string;
   description: string | null;
   logo_url: string | null;
+  palette_id: string;
   status: string;
 }
 

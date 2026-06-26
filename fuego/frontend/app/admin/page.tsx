@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type { MenuItem, Restaurant } from '@/lib/types';
+import { paletteCssVars } from '@/lib/palettes';
 import MenuPanel from './menu-panel';
 import RestaurantBrandingForm from './components/RestaurantBrandingForm';
 
@@ -38,7 +39,10 @@ export default async function AdminPage() {
   if (!items) redirect('/admin/login');
 
   return (
-    <main className="mx-auto w-full max-w-4xl flex-1 space-y-6 px-4 py-6 sm:px-6 sm:py-10">
+    <main
+      className="mx-auto w-full max-w-4xl flex-1 space-y-6 px-4 py-6 sm:px-6 sm:py-10"
+      style={restaurant ? paletteCssVars(restaurant.palette_id) : undefined}
+    >
       {restaurant && <RestaurantBrandingForm initial={restaurant} />}
       <MenuPanel initialItems={items} />
     </main>

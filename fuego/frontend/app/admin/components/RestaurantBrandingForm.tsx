@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { apiFetch, apiJson } from '@/lib/api';
 import type { Restaurant } from '@/lib/types';
+import { PALETTES, DEFAULT_PALETTE_ID } from '@/lib/palettes';
 
 interface Props {
   initial: Restaurant;
@@ -12,6 +13,7 @@ export default function RestaurantBrandingForm({ initial }: Props) {
   const [name, setName] = useState(initial.name);
   const [description, setDescription] = useState(initial.description ?? '');
   const [logoUrl, setLogoUrl] = useState(initial.logo_url ?? '');
+  const [paletteId, setPaletteId] = useState(initial.palette_id || DEFAULT_PALETTE_ID);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -53,6 +55,7 @@ export default function RestaurantBrandingForm({ initial }: Props) {
           name: name.trim(),
           description: description || null,
           logo_url: logoUrl || null,
+          palette_id: paletteId,
         }),
       });
       setSaved(true);
@@ -97,6 +100,28 @@ export default function RestaurantBrandingForm({ initial }: Props) {
         />
         {uploading && <p className="text-sm text-stone-600">Subiendo imagen…</p>}
         {logoUrl && !uploading && <p className="text-sm font-medium text-green-700">Logo cargado</p>}
+      </div>
+      <div className="field-group">
+        <label className="field-label">Paleta de colores</label>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {PALETTES.map((palette) => (
+            <button
+              key={palette.id}
+              type="button"
+              onClick={() => { setPaletteId(palette.id); setSaved(false); }}
+              className={`rounded-xl border p-3 text-left transition ${
+                paletteId === palette.id ? 'border-stone-900 ring-2 ring-stone-900' : 'border-stone-200'
+              }`}
+            >
+              <div className="flex gap-1.5">
+                <span className="h-6 w-6 rounded-full" style={{ background: palette.brand }} />
+                <span className="h-6 w-6 rounded-full" style={{ background: palette.brandStrong }} />
+                <span className="h-6 w-6 rounded-full border border-stone-200" style={{ background: palette.background }} />
+              </div>
+              <p className="mt-2 text-sm font-medium text-stone-800">{palette.name}</p>
+            </button>
+          ))}
+        </div>
       </div>
       {error && <p className="notice notice-error">{error}</p>}
       {saved && <p className="rounded-lg bg-green-50 px-3 py-2 text-sm font-medium text-green-800">Datos guardados correctamente</p>}

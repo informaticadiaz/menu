@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import type { MenuItem } from '@/lib/types';
+import { paletteCssVars } from '@/lib/palettes';
 import MenuCategorySection from './components/MenuCategorySection';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
@@ -10,6 +11,7 @@ interface RestaurantMenu {
   restaurant_name?: string;
   restaurant_description?: string | null;
   restaurant_logo_url?: string | null;
+  restaurant_palette_id?: string | null;
   items: MenuItem[];
 }
 
@@ -71,7 +73,10 @@ export default async function MenuPage({
   const categories = Object.entries(grouped);
 
   return (
-    <main className="mx-auto w-full max-w-3xl flex-1 space-y-8 px-4 py-6 sm:px-6 sm:py-10">
+    <main
+      className="mx-auto w-full max-w-3xl flex-1 space-y-8 px-4 py-6 sm:px-6 sm:py-10"
+      style={{ ...paletteCssVars(menu.restaurant_palette_id), background: 'var(--background)' }}
+    >
       <header className="brand-card p-6 sm:p-8">
         <p className="brand-eyebrow">Menú digital</p>
         {menu.restaurant_logo_url && (
