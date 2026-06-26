@@ -2,11 +2,11 @@
 
 :root {
   color-scheme: light;
-  --background: #fafaf9;
+  --palette-background: #fafaf9;
   --foreground: #0c0a09;
-  --brand: #c2410c;
-  --brand-strong: #9a3412;
-  --brand-focus: #ea580c;
+  --palette-primary: #c2410c;
+  --palette-secondary: #9a3412;
+  --palette-accent: #ea580c;
   --surface: #ffffff;
   --surface-muted: #f5f5f4;
   --text-muted: #57534e;
@@ -25,14 +25,14 @@
 }
 
 @theme inline {
-  --color-background: var(--background);
+  --color-background: var(--palette-background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
-  background: var(--background);
+  background: var(--palette-background);
   color: var(--foreground);
 }
 
@@ -75,13 +75,13 @@ textarea {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.16em;
-  color: var(--brand);
+  color: var(--palette-primary);
 }
 
 .brand-title {
   font-weight: 600;
   letter-spacing: -0.025em;
-  color: var(--foreground);
+  color: var(--palette-primary);
 }
 
 .brand-copy {
@@ -117,8 +117,8 @@ textarea {
 
 .field-input:focus,
 .field-textarea:focus {
-  border-color: var(--brand-focus);
-  outline: 2px solid var(--brand-focus);
+  border-color: var(--palette-accent);
+  outline: 2px solid var(--palette-accent);
 }
 
 .field-textarea {
@@ -150,18 +150,18 @@ textarea {
 }
 
 .btn:focus {
-  outline: 2px solid var(--brand-focus);
+  outline: 2px solid var(--palette-accent);
   outline-offset: 2px;
 }
 
 .btn-primary {
-  background: var(--brand);
+  background: var(--palette-primary);
   color: white;
   box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 }
 
 .btn-primary:hover {
-  background: var(--brand-strong);
+  background: var(--palette-secondary);
 }
 
 .btn-secondary {

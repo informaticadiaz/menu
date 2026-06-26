@@ -114,8 +114,8 @@ export default function RestaurantBrandingForm({ initial }: Props) {
               }`}
             >
               <div className="flex gap-1.5">
-                <span className="h-6 w-6 rounded-full" style={{ background: palette.brand }} />
-                <span className="h-6 w-6 rounded-full" style={{ background: palette.brandStrong }} />
+                <span className="h-6 w-6 rounded-full" style={{ background: palette.primary }} />
+                <span className="h-6 w-6 rounded-full" style={{ background: palette.secondary }} />
                 <span className="h-6 w-6 rounded-full border border-stone-200" style={{ background: palette.background }} />
               </div>
               <p className="mt-2 text-sm font-medium text-stone-800">{palette.name}</p>
