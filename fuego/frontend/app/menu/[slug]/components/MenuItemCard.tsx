@@ -11,10 +11,7 @@ export default function MenuItemCard({ item }: { item: MenuItem }) {
           className="h-20 w-20 flex-shrink-0 rounded-xl object-cover sm:h-24 sm:w-24"
         />
       ) : (
-        <div
-          className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-xl border text-xs font-semibold uppercase tracking-[0.14em] sm:h-24 sm:w-24"
-          style={{ borderColor: 'var(--brand-focus)', background: 'var(--surface-muted)', color: 'var(--brand-strong)' }}
-        >
+        <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-xl border border-orange-100 bg-orange-50 text-xs font-semibold uppercase tracking-[0.14em] text-orange-800 sm:h-24 sm:w-24">
           Fuego
         </div>
       )}
@@ -25,7 +22,7 @@ export default function MenuItemCard({ item }: { item: MenuItem }) {
             <p className="break-words text-sm leading-5 text-stone-600">{item.description}</p>
           )}
         </div>
-        <p className="text-base font-semibold" style={{ color: 'var(--brand-strong)' }}>${item.price}</p>
+        <p className="text-base font-semibold text-orange-800">${item.price}</p>
       </div>
     </li>
   );

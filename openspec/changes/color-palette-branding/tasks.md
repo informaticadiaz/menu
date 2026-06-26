@@ -20,7 +20,7 @@
 
 - [x] 4.1 Crear helper que resuelva `palette_id` → CSS variables (`--palette-primary`, `--palette-secondary`, `--palette-background`, `--palette-accent`)
 - [x] 4.2 Aplicar las CSS variables en el contenedor raíz de `/menu/[slug]` según la paleta del restaurante cargado
-- [x] 4.3 Migrar los colores de marca hardcodeados en `/menu/[slug]` (fondo, acentos, botones) a `var(--palette-*)`
+- [x] 4.3 Migrar los colores de marca hardcodeados en `/menu/[slug]` (header: eyebrow, título, fondo) a `var(--palette-*)`. Se descartó migrar el detalle de cada item (placeholder de imagen y precio): esos colores quedan fijos como antes para no arriesgar el look default, ya que no aportaban a la identidad visual del negocio tanto como el encabezado
 - [x] 4.4 Aplicar las CSS variables al header y acentos de botones/badges del layout de `/admin` autenticado, sin remapear estados semánticos (error/éxito) existentes
 
 ## 5. Design system
