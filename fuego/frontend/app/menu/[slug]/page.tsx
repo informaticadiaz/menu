@@ -75,7 +75,7 @@ export default async function MenuPage({
   return (
     <main
       className="mx-auto w-full max-w-3xl flex-1 space-y-8 px-4 py-6 sm:px-6 sm:py-10"
-      style={{ ...paletteCssVars(menu.restaurant_palette_id), background: 'var(--background)' }}
+      style={{ ...paletteCssVars(menu.restaurant_palette_id), background: 'var(--palette-background)' }}
     >
       <header className="brand-card p-6 sm:p-8">
         <p className="brand-eyebrow">Menú digital</p>

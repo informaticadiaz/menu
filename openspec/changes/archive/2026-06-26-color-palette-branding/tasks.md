@@ -1,6 +1,6 @@
 ## 1. Catálogo de paletas
 
-- [x] 1.1 Definir el catálogo de 6-8 paletas (id, nombre, `primary`, `secondary`, `background`, `accent`) en un módulo compartido (ej. `fuego/backend/src/palettes.ts` y equivalente o import compartido en frontend)
+- [x] 1.1 Definir el catálogo de 6-8 paletas (id, nombre, `primary`, `secondary`, `background`, `accent`) en `fuego/backend/src/palettes.ts` con copia equivalente en `fuego/frontend/lib/palettes.ts`. No se compartió vía import porque backend y frontend son paquetes npm independientes sin workspace TS; mantener ambos archivos sincronizados (mismos ids, nombres y valores) al agregar/editar paletas
 - [x] 1.2 Elegir paleta default (`classic-dark` o similar) para negocios existentes
 
 ## 2. Backend — persistencia y validación
@@ -21,7 +21,7 @@
 - [x] 4.1 Crear helper que resuelva `palette_id` → CSS variables (`--palette-primary`, `--palette-secondary`, `--palette-background`, `--palette-accent`)
 - [x] 4.2 Aplicar las CSS variables en el contenedor raíz de `/menu/[slug]` según la paleta del restaurante cargado
 - [x] 4.3 Migrar los colores de marca hardcodeados en `/menu/[slug]` (header: eyebrow, título, fondo) a `var(--palette-*)`. Se descartó migrar el detalle de cada item (placeholder de imagen y precio): esos colores quedan fijos como antes para no arriesgar el look default, ya que no aportaban a la identidad visual del negocio tanto como el encabezado
-- [x] 4.4 Aplicar las CSS variables al header y acentos de botones/badges del layout de `/admin` autenticado, sin remapear estados semánticos (error/éxito) existentes
+- [x] 4.4 Aplicar las CSS variables al header y acentos de botones/badges del layout de `/admin` autenticado, sin remapear estados semánticos (error/éxito) existentes. Se aplican en `app/admin/page.tsx` (donde se carga el `restaurant` con su `palette_id`) en vez de en `app/admin/layout.tsx`, ya que el layout también envuelve `/admin/login` y no debe theming-arse
 
 ## 5. Design system
 

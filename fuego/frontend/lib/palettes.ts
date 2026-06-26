@@ -1,20 +1,20 @@
 export interface Palette {
   id: string;
   name: string;
-  brand: string;
-  brandStrong: string;
-  brandFocus: string;
+  primary: string;
+  secondary: string;
+  accent: string;
   background: string;
 }
 
 export const PALETTES: Palette[] = [
-  { id: 'classic-dark', name: 'Clásico naranja', brand: '#c2410c', brandStrong: '#9a3412', brandFocus: '#ea580c', background: '#fafaf9' },
-  { id: 'warm-terracotta', name: 'Cálido terracota', brand: '#b45309', brandStrong: '#92400e', brandFocus: '#d97706', background: '#fffbeb' },
-  { id: 'minimal-light', name: 'Minimal claro', brand: '#1c1917', brandStrong: '#000000', brandFocus: '#44403c', background: '#ffffff' },
-  { id: 'natural-green', name: 'Verde natural', brand: '#15803d', brandStrong: '#166534', brandFocus: '#16a34a', background: '#f0fdf4' },
-  { id: 'elegant-black-gold', name: 'Elegante negro y dorado', brand: '#ca8a04', brandStrong: '#854d0e', brandFocus: '#eab308', background: '#0c0a09' },
-  { id: 'vibrant-pink', name: 'Vibrante', brand: '#be185d', brandStrong: '#9d174d', brandFocus: '#ec4899', background: '#fdf2f8' },
-  { id: 'ocean-blue', name: 'Azul océano', brand: '#1d4ed8', brandStrong: '#1e3a8a', brandFocus: '#3b82f6', background: '#eff6ff' },
+  { id: 'classic-dark', name: 'Clásico naranja', primary: '#c2410c', secondary: '#9a3412', accent: '#ea580c', background: '#fafaf9' },
+  { id: 'warm-terracotta', name: 'Cálido terracota', primary: '#b45309', secondary: '#92400e', accent: '#d97706', background: '#fffbeb' },
+  { id: 'minimal-light', name: 'Minimal claro', primary: '#1c1917', secondary: '#000000', accent: '#44403c', background: '#ffffff' },
+  { id: 'natural-green', name: 'Verde natural', primary: '#15803d', secondary: '#166534', accent: '#16a34a', background: '#f0fdf4' },
+  { id: 'elegant-black-gold', name: 'Elegante negro y dorado', primary: '#ca8a04', secondary: '#854d0e', accent: '#eab308', background: '#0c0a09' },
+  { id: 'vibrant-pink', name: 'Vibrante', primary: '#be185d', secondary: '#9d174d', accent: '#ec4899', background: '#fdf2f8' },
+  { id: 'ocean-blue', name: 'Azul océano', primary: '#1d4ed8', secondary: '#1e3a8a', accent: '#3b82f6', background: '#eff6ff' },
 ];
 
 export const DEFAULT_PALETTE_ID = 'classic-dark';
@@ -26,9 +26,9 @@ export function getPalette(paletteId: string | null | undefined): Palette {
 export function paletteCssVars(paletteId: string | null | undefined): Record<string, string> {
   const palette = getPalette(paletteId);
   return {
-    '--brand': palette.brand,
-    '--brand-strong': palette.brandStrong,
-    '--brand-focus': palette.brandFocus,
-    '--background': palette.background,
+    '--palette-primary': palette.primary,
+    '--palette-secondary': palette.secondary,
+    '--palette-accent': palette.accent,
+    '--palette-background': palette.background,
   };
 }
