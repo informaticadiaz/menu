@@ -4,7 +4,7 @@
 TBD - created by archiving change public-menu-page. Update Purpose after archive.
 ## Requirements
 ### Requirement: Visualización pública del menú por slug
-El sistema SHALL mostrar en `/menu/[slug]` el menú del restaurante correspondiente a ese slug, sin requerir autenticación, consumiendo `GET /api/menu/:slug`. El endpoint SHALL incluir `logo_url` y `description` del restaurante en su respuesta.
+El sistema SHALL mostrar en `/menu/[slug]` el menú del restaurante correspondiente a ese slug, sin requerir autenticación, consumiendo `GET /api/menu/:slug`. El endpoint SHALL incluir `logo_url`, `description` y `palette_id` del restaurante en su respuesta.
 
 #### Scenario: Slug válido con items
 - **WHEN** un usuario navega a `/menu/<slug-existente>`
@@ -87,3 +87,14 @@ La página pública del menú SHALL mostrar el logo y la descripción del negoci
 #### Scenario: Negocio sin descripción
 - **WHEN** un usuario navega a `/menu/<slug>` y el restaurante no tiene `description`
 - **THEN** la página no muestra ningún texto vacío ni placeholder para la descripción
+
+### Requirement: Theming de la paleta de color del negocio
+La página pública del menú SHALL aplicar la paleta de color del negocio (`palette_id`) como tema visual del fondo, acentos y botones de la página.
+
+#### Scenario: Negocio con paleta configurada
+- **WHEN** un usuario navega a `/menu/<slug>` y el restaurante tiene un `palette_id` válido
+- **THEN** la página renderiza fondo, acentos y botones usando los colores de esa paleta
+
+#### Scenario: Negocio sin paleta configurada
+- **WHEN** un usuario navega a `/menu/<slug>` y el restaurante no tiene `palette_id` (dato preexistente)
+- **THEN** la página renderiza con la paleta default, manteniendo la apariencia naranja/clara actual
