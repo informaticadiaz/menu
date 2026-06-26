@@ -4,6 +4,7 @@ import type { MenuItem, Restaurant } from '@/lib/types';
 import { paletteCssVars } from '@/lib/palettes';
 import MenuPanel from './menu-panel';
 import RestaurantBrandingForm from './components/RestaurantBrandingForm';
+import MenuQrCode from './components/MenuQrCode';
 
 const BACKEND_INTERNAL_URL = process.env.BACKEND_INTERNAL_URL || 'http://localhost:3001';
 
@@ -44,6 +45,7 @@ export default async function AdminPage() {
       style={restaurant ? paletteCssVars(restaurant.palette_id) : undefined}
     >
       {restaurant && <RestaurantBrandingForm initial={restaurant} />}
+      {restaurant && <MenuQrCode slug={restaurant.slug} />}
       <MenuPanel initialItems={items} />
     </main>
   );
