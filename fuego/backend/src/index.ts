@@ -10,6 +10,7 @@ import { getDb } from './db/schema';
 import { getJwtSecret, getSystemJwtSecret, SESSION_COOKIE_NAME, SESSION_MAX_AGE_SECONDS, SYSTEM_SESSION_COOKIE_NAME } from './auth';
 import { authMiddleware, systemAuthMiddleware } from './middleware/auth';
 import { slugify, isValidSlug, resolveAvailableSlug } from './slug';
+import { PALETTES, isValidPaletteId } from './palettes';
 import { randomUUID } from 'crypto';
 import { mkdir, writeFile } from 'fs/promises';
 import path from 'path';
@@ -125,13 +126,17 @@ app.get('/api/auth/me', authMiddleware, (c) => {
   return c.json({ restaurantId: c.get('restaurantId') });
 });
 
+app.get('/api/palettes', (c) => {
+  return c.json({ palettes: PALETTES });
+});
+
 app.get('/api/admin/restaurant', authMiddleware, (c) => {
   try {
     const restaurantId = c.get('restaurantId');
     const restaurant = db
-      .prepare('SELECT id, name, slug, description, logo_url, status FROM restaurants WHERE id = ?')
+      .prepare('SELECT id, name, slug, description, logo_url, palette_id, status FROM restaurants WHERE id = ?')
       .get(restaurantId) as
-      | { id: number; name: string; slug: string; description: string | null; logo_url: string | null; status: string }
+      | { id: number; name: string; slug: string; description: string | null; logo_url: string | null; palette_id: string; status: string }
       | undefined;
     if (!restaurant) return c.json({ error: 'Restaurante no encontrado' }, 404);
     return c.json({ restaurant });
@@ -144,10 +149,19 @@ app.put('/api/admin/restaurant', authMiddleware, async (c) => {
   try {
     const restaurantId = c.get('restaurantId');
     const body = await c.req.json();
-    const { name, description, logo_url } = body as { name?: string; description?: string | null; logo_url?: string | null };
+    const { name, description, logo_url, palette_id } = body as {
+      name?: string;
+      description?: string | null;
+      logo_url?: string | null;
+      palette_id?: string;
+    };
 
     if (name !== undefined && !name.trim()) {
       return c.json({ error: 'El nombre no puede estar vacío' }, 400);
+    }
+
+    if (palette_id !== undefined && !isValidPaletteId(palette_id)) {
+      return c.json({ error: 'La paleta seleccionada no es válida' }, 400);
     }
 
     const fields: string[] = [];
@@ -155,6 +169,7 @@ app.put('/api/admin/restaurant', authMiddleware, async (c) => {
     if (name !== undefined) { fields.push('name = ?'); values.push(name.trim()); }
     if (description !== undefined) { fields.push('description = ?'); values.push(description); }
     if (logo_url !== undefined) { fields.push('logo_url = ?'); values.push(logo_url); }
+    if (palette_id !== undefined) { fields.push('palette_id = ?'); values.push(palette_id); }
 
     if (fields.length === 0) return c.json({ error: 'Sin campos para actualizar' }, 400);
 
@@ -165,7 +180,7 @@ app.put('/api/admin/restaurant', authMiddleware, async (c) => {
     db.prepare(`UPDATE restaurants SET ${fields.join(', ')} WHERE id = ?`).run(...values);
 
     const restaurant = db
-      .prepare('SELECT id, name, slug, description, logo_url, status FROM restaurants WHERE id = ?')
+      .prepare('SELECT id, name, slug, description, logo_url, palette_id, status FROM restaurants WHERE id = ?')
       .get(restaurantId);
     return c.json({ restaurant });
   } catch (error) {
@@ -394,12 +409,19 @@ app.post('/api/auth/signup', async (c) => {
 app.get('/api/menu/:slug', (c) => {
   try {
     const slug = c.req.param('slug');
-    const restaurant = db.prepare('SELECT id, name, description, logo_url FROM restaurants WHERE slug = ?').get(slug) as
-      | { id: number; name: string; description: string | null; logo_url: string | null }
+    const restaurant = db.prepare('SELECT id, name, description, logo_url, palette_id FROM restaurants WHERE slug = ?').get(slug) as
+      | { id: number; name: string; description: string | null; logo_url: string | null; palette_id: string }
       | undefined;
     if (!restaurant) return c.json({ error: 'Restaurante no encontrado' }, 404);
     const items = db.prepare('SELECT * FROM menu_items WHERE restaurant_id = ? ORDER BY category, name').all(restaurant.id);
-    return c.json({ restaurant_id: restaurant.id, restaurant_name: restaurant.name, restaurant_description: restaurant.description, restaurant_logo_url: restaurant.logo_url, items });
+    return c.json({
+      restaurant_id: restaurant.id,
+      restaurant_name: restaurant.name,
+      restaurant_description: restaurant.description,
+      restaurant_logo_url: restaurant.logo_url,
+      restaurant_palette_id: restaurant.palette_id,
+      items,
+    });
   } catch (error) {
     return c.json({ error: String(error) }, 500);
   }

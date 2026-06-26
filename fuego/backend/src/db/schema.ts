@@ -25,6 +25,7 @@ export const schema = {
       description TEXT,
       logo_url TEXT,
       status TEXT NOT NULL DEFAULT 'active',
+      palette_id TEXT NOT NULL DEFAULT 'classic-dark',
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     )

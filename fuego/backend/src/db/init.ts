@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import bcrypt from 'bcryptjs';
 import { initDb, schema } from './schema';
+import { DEFAULT_PALETTE_ID } from '../palettes';
 
 const SEED_ADMIN_EMAIL = 'admin@fuego-ba.com';
 const SEED_ADMIN_PASSWORD = 'fuego1234';
@@ -40,6 +41,7 @@ export function initializeDB(): void {
   const db = initDb();
   db.exec(schema.restaurants);
   ensureColumn(db, 'restaurants', 'status', "TEXT NOT NULL DEFAULT 'active'");
+  ensureColumn(db, 'restaurants', 'palette_id', `TEXT NOT NULL DEFAULT '${DEFAULT_PALETTE_ID}'`);
   db.exec(schema.menu_items);
   db.exec(schema.admin_users);
   db.exec(schema.system_admin_users);
